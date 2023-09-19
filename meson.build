@@ -22,3 +22,14 @@ run_target('iwyu',
 
 run_target('iwyu-fix',
            command : ['iwyu.sh', 'fix'])
+
+run_target('cppcheck',
+  command : [
+    'cppcheck',
+    '--project=./compile_commands.json',
+    '--enable=all',
+    '--check-config',
+    '--suppress=missingIncludeSystem',
+    '--report-progress'
+  ], 
+)
