@@ -9,3 +9,7 @@ executable('hw_01',
 executable('hw_02',
            'main_hw02.cc',
            install : true)
+
+executable('hw_03',
+           'main_hw03.cc',
+           install : true)
