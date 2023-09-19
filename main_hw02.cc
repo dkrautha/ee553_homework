@@ -1,12 +1,11 @@
-#include <cmath> // double sin(double), double cos(double)
-#include <cstdlib>
+#include <cmath>  // double sin(double), double cos(double)
 #include <fstream>
 #include <iomanip>
-#include <ios>
 #include <iostream>
-#include <string>
 
-using namespace std;
+using std::cin;
+using std::cout;
+using std::endl;
 
 // const for pi
 constexpr auto pi = 3.14159265358979323846;
@@ -71,8 +70,8 @@ int main() {
     // set precision just for x and y, then set it back afterwards as the
     // question doesn't specify that anything else should use the increased
     // precision
-    cout << setprecision(8) << "x: " << x << " y: " << y << '\n';
-    cout << setprecision(default_precision);
+    cout << std::setprecision(8) << "x: " << x << " y: " << y << '\n';
+    cout << std::setprecision(default_precision);
     const auto calculated_radians = atan2(y, x);
     cout << "calculated radians: " << calculated_radians << "\n\n";
   }

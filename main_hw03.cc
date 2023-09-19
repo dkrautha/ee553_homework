@@ -1,5 +1,3 @@
-#include <math.h>
-
 #include <iostream>
 #include <random>  // for std::uniform_int_distribution
 
@@ -30,6 +28,8 @@ auto odds_only(const int* const A, const int n, int*& e, int& m) {
   // case of a std::vector instead of trying to use a pointer and a length
   // I've taken the lazy way out by allocating e to be the same size as A, and
   // just lying about it's actual length to the caller
+  // there's an additional problem here, if e is not nullptr, then whatever it
+  // was pointing to will be leaked when we reassign it in the function
   e = new int[n];
   for (auto i = 0; i < n; i += 1) {
     if (A[i] % 2 == 1) {
@@ -101,14 +101,14 @@ int main() {
   // Read only this part of the problem
 
   // define the size of the array and the array
-  const int N = 10;  // Size of the array
+  constexpr int N = 10;  // Size of the array
   int arr[N];
 
   std::random_device random_device{};
   auto generator = std::mt19937(random_device());
   auto distribution = std::uniform_int_distribution<>(0, 99);
   // Initialize the array with random values (for demonstration)
-  for (int i = 0; i < N; i++) {
+  for (auto i = 0; i < N; i++) {
     // write code to generate random number between 0-99 and fill in the array
     arr[i] = distribution(generator);
   }
@@ -118,8 +118,8 @@ int main() {
   print_elements(arr, N);
   cout << endl;
 
-  int searchValue;
   cout << "Enter a value to search for: ";
+  int searchValue;
   cin >> searchValue;
 
   bool found = false;

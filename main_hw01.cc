@@ -1,8 +1,6 @@
-#include <cmath>
 #include <iostream>
-// #include "functionSum.h"
 
-using namespace std; // if not used, must write std::cout or std::endl
+using std::cout;
 
 double sumUpTo(int n) {
   double sum = 0.0;
