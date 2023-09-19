@@ -2,39 +2,39 @@
 
 using std::cout;
 
-double sumUpTo(int n) {
+auto sumUpTo(int n) -> double {
   double sum = 0.0;
-  for (double i = 1; i <= n; i += 1) {
+  for (auto i = 1; i <= n; i += 1) {
     sum += i;
   }
   return sum;
 }
 
-double sumReciprocalNormal(int n) {
+auto sumReciprocalNormal(int n) -> double {
   double sum = 0.0;
-  for (double i = 1; i <= n; i += 1) {
+  for (auto i = 1; i <= n; i += 1) {
     sum += 1.0 / i;
   }
   return sum;
 }
 
-double sumReciprocalRev(int n) {
+auto sumReciprocalRev(int n) -> double {
   double sum = 0.0;
-  for (double i = n; i >= 1; i -= 1) {
+  for (auto i = n; i >= 1; i -= 1) {
     sum += 1.0 / i;
   }
   return sum;
 }
 
-double sumMysteryNormal(int n) {
+auto sumMysteryNormal(int n) -> double {
   double sum = 0.0;
-  for (double i = 1; i <= n; i += 1) {
+  for (auto i = 1; i <= n; i += 1) {
     sum += 1.0 / (i * i);
   }
   return sum;
 }
 
-double sumMysteryRev(int n) {
+auto sumMysteryRev(int n) -> double {
   double sum = 0.0;
   for (int i = n; i >= 1; i -= 1) {
     sum += 1.0 / (i * i);
@@ -42,20 +42,21 @@ double sumMysteryRev(int n) {
   return sum;
 }
 
-int main() {
+auto main() -> int {
+  constexpr auto SUM_TO = 100;
   // Problem One
-  cout << "sumUpTo: " << sumUpTo(100) << '\n';
+  cout << "sumUpTo: " << sumUpTo(SUM_TO) << '\n';
 
   // Problem Two
-  double sum1 = sumReciprocalNormal(100);
-  double sum2 = sumReciprocalRev(100);
+  double sum1 = sumReciprocalNormal(SUM_TO);
+  double sum2 = sumReciprocalRev(SUM_TO);
   cout << "sumReciprocalNormal: " << sum1 << '\n';
   cout << "sumReciprocalRev: " << sum2 << '\n';
   cout << "reciprocal difference: " << (sum1 - sum2) << '\n';
 
   // Problem Three
-  double sum3 = sumMysteryNormal(100);
-  double sum4 = sumMysteryRev(100);
+  double sum3 = sumMysteryNormal(SUM_TO);
+  double sum4 = sumMysteryRev(SUM_TO);
   cout << "sumMysteryNormal: " << sum3 << '\n';
   cout << "sumMysteryRev: " << sum4 << '\n';
   cout << "mystery difference: " << (sum3 - sum4) << '\n';

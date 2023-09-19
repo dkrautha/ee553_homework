@@ -5,36 +5,37 @@ using std::cin;
 using std::cout;
 using std::endl;
 
-auto read_elements(int* A, const int n) {
-  for (auto i = 0; i < n; i += 1) {
-    cin >> A[i];
+auto read_elements(int* arr, const int arr_size) {
+  for (auto i = 0; i < arr_size; i += 1) {
+    cin >> arr[i];
   }
 }
 
-auto print_elements(const int* const A, const int n) {
-  for (auto i = 0; i < n; i += 1) {
-    cout << A[i] << " ";
+auto print_elements(const int* const arr, const int arr_size) {
+  for (auto i = 0; i < arr_size; i += 1) {
+    cout << arr[i] << " ";
   }
 }
 
-auto print_elements_rev(const int* const A, const int n) {
-  for (auto i = n - 1; i >= 0; i -= 1) {
-    cout << A[i] << " ";
+auto print_elements_rev(const int* const arr, const int arr_size) {
+  for (auto i = arr_size - 1; i >= 0; i -= 1) {
+    cout << arr[i] << " ";
   }
 }
 
-auto odds_only(const int* const A, const int n, int*& e, int& m) {
+auto odds_only(const int* const arr, const int arr_size, int*& output_arr,
+               int& output_size) {
   // you can't resize allocations with new[] very easily, this is a perfect use
   // case of a std::vector instead of trying to use a pointer and a length
   // I've taken the lazy way out by allocating e to be the same size as A, and
   // just lying about it's actual length to the caller
   // there's an additional problem here, if e is not nullptr, then whatever it
   // was pointing to will be leaked when we reassign it in the function
-  e = new int[n];
-  for (auto i = 0; i < n; i += 1) {
-    if (A[i] % 2 == 1) {
-      e[m] = A[i];
-      m += 1;
+  output_arr = new int[arr_size];
+  for (auto i = 0; i < arr_size; i += 1) {
+    if (arr[i] % 2 == 1) {
+      output_arr[output_size] = arr[i];
+      output_size += 1;
     }
   }
 }

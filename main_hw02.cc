@@ -8,18 +8,18 @@ using std::cout;
 using std::endl;
 
 // const for pi
-constexpr auto pi = 3.14159265358979323846;
+constexpr auto PI = 3.14159265358979323846;
 
-auto is_prime(int n) -> bool {
-  for (auto i = 2; i < n; i += 1) {
-    if (n % i == 0) {
+auto is_prime(int num) -> bool {
+  for (auto i = 2; i < num; i += 1) {
+    if (num % i == 0) {
       return false;
     }
   }
   return true;
 }
 
-int main() {
+auto main() -> int {
   cout << "###########" << endl;
   cout << "Problem One" << endl;
   cout << "###########" << endl;
@@ -63,15 +63,19 @@ int main() {
   const auto default_precision = cout.precision();
   while (file >> r >> theta_degrees) {
     cout << "r: " << r << " theta degrees: " << theta_degrees << '\n';
-    const auto theta_radian = theta_degrees * (pi / 180.0);
+    const auto theta_radian = theta_degrees * (PI / 180.0);
     cout << "theta radians: " << theta_radian << '\n';
     const auto x = r * cos(theta_radian);
     const auto y = r * sin(theta_radian);
+
     // set precision just for x and y, then set it back afterwards as the
     // question doesn't specify that anything else should use the increased
     // precision
-    cout << std::setprecision(8) << "x: " << x << " y: " << y << '\n';
-    cout << std::setprecision(default_precision);
+    constexpr auto x_and_y_precision = 8;
+    cout.precision(x_and_y_precision);
+    cout << "x: " << x << " y: " << y << '\n';
+    cout.precision(default_precision);
+
     const auto calculated_radians = atan2(y, x);
     cout << "calculated radians: " << calculated_radians << "\n\n";
   }
@@ -106,7 +110,8 @@ int main() {
   // check if temperature  meet condition
   cout << "Enter temperature: ";
   cin >> temperature;
-  if (temperature > 50) {
+  constexpr auto max_temperature = 50;
+  if (temperature > max_temperature) {
     can_run = false;
   }
   // check if all condition is met and use canRun to start calculation of wind
