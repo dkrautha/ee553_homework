@@ -1,6 +1,5 @@
 #include <cmath>  // double sin(double), double cos(double)
 #include <fstream>
-#include <iomanip>
 #include <iostream>
 
 using std::cin;
