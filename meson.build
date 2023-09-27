@@ -17,6 +17,10 @@ executable('hw_03',
            'main_hw03.cc',
            install : true)
 
+executable('hw_04',
+           'hw_04.cc',
+           install : true)
+
 run_target('iwyu',
            command : ['iwyu.sh', 'check'])
 
