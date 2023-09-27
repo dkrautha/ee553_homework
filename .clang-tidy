@@ -6,20 +6,16 @@ Checks:
   # -android-*,
   -fuchsia-*,
   # -google-*,
-  -llvm*,"
+  -llvm*,
+  -readability-identifier-length,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -readability-magic-numbers,
+  -misc-non-private-member-variables-in-classes,"
   # -modernize-use-trailing-return-type,
   # -zircon-*,
   # -readability-else-after-return,
   # -readability-static-accessed-through-instance,
   # -readability-avoid-const-params-in-decls,
-  # -cppcoreguidelines-non-private-member-variables-in-classes,
-  #-misc-non-private-member-variables-in-classes,"
 WarningsAsErrors: ""
 HeaderFilterRegex: ""
 FormatStyle: none
-
-CheckOptions:
-  - key: readability-identifier-length.IgnoredVariableNames
-    value: "x|y|z|PI"
-  - key: readability-identifier-length.IgnoredParameterNames
-    value: "x|y|z"
