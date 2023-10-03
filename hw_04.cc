@@ -4,15 +4,9 @@
 using std::cout;
 using std::endl;
 
-// complete the JulianDate class
-// write your code in the JulianDae class
-// complete the code in main
-
 class JulianDate {
   // Make all your class access is public
  public:
-  // first define your variable type and variable (year, month, day, hour, mins,
-  // sec)
   int year;
   int month;
   int day;
@@ -40,10 +34,6 @@ class JulianDate {
     sec = now_date->tm_sec;
   };
 
-  // write function that calculate julian number from given date
-  // your function should return the value
-  // use calc_juliandate as the function name
-  // write your code here
   [[nodiscard]] auto calc_juliandate() const -> double {
     // all integer division is intentional!
     const auto A = (month - 14) / 12;
@@ -59,9 +49,6 @@ class JulianDate {
     return julian_hms;
   }
 
-  // write function that calculate difference between two Julian date
-  // use diff_calc_juliandate as the function name
-  // write your code here
   [[nodiscard]] auto diff_calc_juliandate(const JulianDate& other) const
       -> double {
     auto this_jd = calc_juliandate();
@@ -70,38 +57,18 @@ class JulianDate {
   };
 };
 
-/*
-
-Use the formula in the below web page in the calculate julian function
-
 // LINK ONE IS DEAD
-http://www.c-jump.com/bcc/c155c/Homework/a4_Serial_Julian_Date/a4_Serial_Julian_Date.html
-// LINK TWO DOESN"T HAVE THE FORMULA
-https://www.aavso.org/jd-calculator
-
-hh:mm:ss
-
-00:00:00  0.0
-12:00:00  0.5
-
-18*365+18/4 - 18/100 + 18/400
-18*364+4 = 6574
-
-6574.041666666 --> Jan 1, 2018, 01:00:00
- */
-// int JulianDate::EPOCH = 2000; // Jan.1 2000, 00:00:00 = 0
+// http://www.c-jump.com/bcc/c155c/Homework/a4_Serial_Julian_Date/a4_Serial_Julian_Date.html
+// LINK TWO DOESN'T HAVE THE FORMULA
+// https://www.aavso.org/jd-calculator
 
 auto main() -> int {
-  std::cout << "########" << std::endl;
-  std::cout << "Main Problem" << std::endl;
-  std::cout << "########" << std::endl;
-
-  // Run your class on this code and calculate the difference of Julian number
-  // below
+  cout << "########" << endl;
+  cout << "Main Problem" << endl;
+  cout << "########" << endl;
 
   cout.precision(20);
   JulianDate x(2007, 2, 8, 0, 0, 0);
-  // how many days since day 0? dy = (2018 - 2000) * 365
   double x1 = x.calc_juliandate();
   cout << "x1: " << x1 << endl;
 
@@ -110,13 +77,9 @@ auto main() -> int {
   cout << "y1: " << y1 << endl;
 
   // manual calculation of the difference between two dates, e.g., x1 - y1 =
-  // results print out the result
-  //  write your code here
   cout << "x1 - y1 manual: " << x1 - y1 << endl;
 
   // Now use your class function to find the difference between two dates
-  // print out the result
-  // write your code here
   cout << "x1 - y1 class: " << x.diff_calc_juliandate(y) << endl;
 
   // example of date to Julian date format without hour/min/sec
