@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <exception>
 #include <fstream>
+#include <functional>
 #include <iostream>
 #include <limits>
 #include <optional>
@@ -16,6 +17,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
+// global constants
 constexpr double G = 6.674E-11;
 constexpr double PI = 3.14159265358979323846;
 
@@ -35,14 +37,46 @@ auto read_line(std::basic_istream<CharT, Traits>& is) -> string {
   return line;
 }
 
+// 3 dimensional vector class
 struct Vec3d {
-  int x;
-  int y;
-  int z;
+  double x;
+  double y;
+  double z;
 
-  Vec3d() = default;
+  auto zero() -> void {
+    x = 0;
+    y = 0;
+    z = 0;
+  }
 
-  auto operator*=(const int rhs) -> Vec3d& {
+  auto length() const -> double { return std::sqrt(x * x + y * y + z * z); }
+
+  auto abs() const -> Vec3d {
+    return Vec3d{std::abs(x), std::abs(y), std::abs(z)};
+  }
+
+  auto operator+=(const double rhs) -> Vec3d& {
+    x += rhs;
+    y += rhs;
+    z += rhs;
+    return *this;
+  }
+
+  auto operator+=(const Vec3d& rhs) -> Vec3d& {
+    x += rhs.x;
+    y += rhs.y;
+    z += rhs.z;
+    return *this;
+  }
+
+  auto operator-=(const Vec3d& rhs) -> Vec3d& {
+    x -= rhs.x;
+    y -= rhs.y;
+    z -= rhs.z;
+    return *this;
+  }
+
+  auto operator*=(const double rhs) -> Vec3d& {
     x *= rhs;
     y *= rhs;
     z *= rhs;
@@ -50,67 +84,78 @@ struct Vec3d {
   }
 
   friend auto operator<<(std::ostream& os, const Vec3d& v) -> std::ostream& {
-    return os << v.x << ", " << v.y << ", " << v.z;
+    return os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
   }
 };
 
-inline auto operator*(const Vec3d& lhs, const int rhs) -> Vec3d {
+auto operator+(const Vec3d& lhs, const double rhs) -> Vec3d {
+  auto result = lhs;
+  result += rhs;
+  return result;
+}
+
+auto operator+(const Vec3d& lhs, const Vec3d& rhs) -> Vec3d {
+  auto result = lhs;
+  result += rhs;
+  return result;
+}
+
+auto operator-(const Vec3d& lhs, const Vec3d& rhs) -> Vec3d {
+  auto result = lhs;
+  result -= rhs;
+  return result;
+}
+
+auto operator*(const Vec3d& lhs, const double rhs) -> Vec3d {
   auto result = lhs;
   result *= rhs;
   return result;
 }
 
-inline auto operator*(const int lhs, const Vec3d& rhs) -> Vec3d {
+auto operator*(const double lhs, const Vec3d& rhs) -> Vec3d {
   auto result = rhs;
   result *= lhs;
   return result;
 }
 
 class Body {
-  string name{"none"};
-  string orbit_name{"none"};
-  double mass{0};
+  string name_{"none"};
+  string orbit_name_{"none"};
+  double mass_{0};
+
+ public:
   Vec3d position{0, 0, 0};
   Vec3d velocity{0, 0, 0};
   Vec3d acceleration{0, 0, 0};
 
- public:
   Body() = default;
   Body(string name, string orbit_name, double mass, Vec3d position,
        Vec3d velocity, Vec3d acceleration)
-      : name{std::move(name)},
-        orbit_name{std::move(orbit_name)},
-        mass{mass},
+      : name_{std::move(name)},
+        orbit_name_{std::move(orbit_name)},
+        mass_{mass},
         position{position},
         velocity{velocity},
         acceleration{acceleration} {}
 
+  auto name() const -> const string& { return name_; }
+
+  auto mass() const -> double { return mass_; }
+  auto mass_mut() -> double& { return mass_; }
+
   friend auto operator<<(std::ostream& os, const Body& b) -> std::ostream& {
-    return os << b.name << ", " << b.orbit_name << ", " << b.mass << ", "
-              << b.position << ", " << b.velocity << ", " << b.acceleration;
+    return os << "Name: " << b.name_ << "\n\tOrbit: " << b.orbit_name_
+              << "\n\tMass: " << b.mass_ << "\n\tPosition: " << b.position
+              << "\n\tVelocity: " << b.velocity
+              << "\n\tAcceleration: " << b.acceleration;
   }
-
- private:
-  static auto set_accelerations(vector<Body>& bodies, int acc) -> void {
-    for (auto& b : bodies) {
-      b.acceleration *= acc;
-    }
-  }
-
-  friend class SolarSystem;
 };
 
 class SolarSystem {
   vector<Body> bodies;
 
-  std::random_device rd;
-  std::mt19937 gen;
-  std::uniform_int_distribution<> pos_dist;
-  std::uniform_real_distribution<> angle_dist;
-
  public:
-  explicit SolarSystem(const string& path)
-      : gen(rd()), pos_dist(0, 10), angle_dist(0, 2 * PI) {
+  explicit SolarSystem(const string& path) {
     auto file = std::ifstream(path);
 
     if (!file.is_open()) {
@@ -119,8 +164,18 @@ class SolarSystem {
     // skip the first line
     file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-    auto suns_mass = parse_sun(file);
+    {  // parsing the sun
+      auto iss = std::istringstream(read_line(file));
+      const auto name = read_from<string>(iss);
+      const auto orbit = read_from<string>(iss);
+      const auto mass = read_from<double>(iss);
+      bodies.emplace_back(name, orbit, mass, Vec3d{}, Vec3d{}, Vec3d{});
+    }
 
+    std::mt19937 gen(std::random_device{}());
+    std::uniform_real_distribution<> angle_dist(0, 2 * PI);
+
+    // parsing the rest of the bodies
     while (true) {
       const auto line = read_line(file);
       if (line.empty()) {
@@ -134,7 +189,9 @@ class SolarSystem {
       const auto mass = read_from<double>(iss);
 
       if (orbit_name != "Sun") {
-        bodies.emplace_back(name, orbit_name, mass, Vec3d{}, Vec3d{}, Vec3d{});
+        // if we aren't orbiting the sun, skip it
+        cout << "Skipping adding body to the simulation: " << name
+             << ", it doesn't orbit the sun." << endl;
         continue;
       }
 
@@ -143,31 +200,52 @@ class SolarSystem {
       const auto aphelion = read_from<double>(iss);
       const auto radius = (perihelion + aphelion) / 2;
       const auto random_angle = angle_dist(gen);
-      const auto rcos = radius * std::cos(random_angle);
-      const auto rsin = radius * std::sin(random_angle);
+      const auto random_x = radius * cos(random_angle);
+      const auto random_y = radius * sin(random_angle);
 
-      const auto position = random_position();
+      const auto starting_position = Vec3d{random_x, random_y, 0};
 
-      const auto velocity_magnitude = std::sqrt(G * suns_mass / radius);
-      const auto velocity =
-          Vec3d{static_cast<int>(velocity_magnitude * rcos),
-                static_cast<int>(velocity_magnitude * rsin), 0};
-
-      const auto acceleration_magnitude =
-          velocity_magnitude * velocity_magnitude / radius;
-      const auto acceleration =
-          Vec3d{static_cast<int>(acceleration_magnitude * rcos),
-                static_cast<int>(acceleration_magnitude * rsin), 0};
-
-      cout << "body name: " << name << " orbit: " << orbit_name << endl;
-      cout << "orbital velocity is: " << velocity_magnitude << endl;
-      cout << "centripetal acceleration: " << acceleration_magnitude << endl;
-      bodies.emplace_back(name, orbit_name, mass, position, velocity,
-                          acceleration);
+      cout << "Adding body to the simulation: " << name << endl;
+      cout << "\tStarting position is: " << starting_position << endl;
+      cout << "\tRadius is: " << radius << endl;
+      bodies.emplace_back(name, orbit_name, mass, starting_position, Vec3d{},
+                          Vec3d{});
     }
   }
 
-  void step_forward(int acc) { Body::set_accelerations(bodies, acc); }
+  void time_step(double dt) {
+    for (auto& b1 : bodies) {
+      b1.acceleration.zero();
+      for (auto& b2 : bodies) {
+        if (b2.name() != b1.name()) {
+          // F = ma = G * M * m / r^2
+          // a = G * M * m / (m * r^2)
+          // a = G * M / r^2
+          const auto dist = (b1.position - b2.position).length();
+          const auto a1 = G * b2.mass() / (dist * dist * dist);
+          b1.acceleration += a1;
+          const auto a2 = G * b1.mass() / (dist * dist * dist);
+          b2.acceleration += a2;
+        }
+      }
+    }
+    for (auto& b : bodies) {
+      // d = v * dt + 0.5 * a * dt^2
+      b.position += b.velocity * dt + 0.5 * b.acceleration * dt * dt;
+      // vf = vi + a * dt
+      b.velocity += b.acceleration * dt;
+    }
+  }
+
+  auto get_body(const string& name)
+      -> std::optional<std::reference_wrapper<const Body>> {
+    for (const auto& b : bodies) {
+      if (b.name() == name) {
+        return std::reference_wrapper<const Body>(b);
+      }
+    }
+    return {};
+  }
 
   friend auto operator<<(std::ostream& os, const SolarSystem& s)
       -> std::ostream& {
@@ -176,41 +254,38 @@ class SolarSystem {
     }
     return os;
   }
-
- private:
-  auto random_position() -> Vec3d {
-    return {pos_dist(gen), pos_dist(gen), pos_dist(gen)};
-  }
-
-  auto parse_sun(std::ifstream& file) -> double {
-    const auto line = read_line(file);
-    auto iss = std::istringstream(line);
-
-    const auto name = read_from<string>(iss);
-    const auto orbit_name = read_from<string>(iss);
-    const auto mass = read_from<double>(iss);
-
-    bodies.emplace_back(name, orbit_name, mass, Vec3d{}, Vec3d{}, Vec3d{});
-    return bodies.at(0).mass;
-  }
 };
 
+constexpr double earth_year = 365 * 24 * 60 * 60;
+constexpr int num_time_steps = 1000;
+constexpr double dt = earth_year / num_time_steps;
+
+auto vec_check_difference(const Vec3d& v1, const Vec3d& v2) -> bool {
+  return (v1.x - v2.x) < 1e-6 && (v1.y - v2.y) < 1e-6 && (v1.z - v2.z) < 1e-6;
+}
+
 auto main() -> int try {
-  cout << "########" << endl;
-  cout << "Main Problem" << endl;
-  cout << "########" << endl;
-
   auto s = SolarSystem("./solarsystem.dat");
-  cout << s;
-  cout << "=============" << endl;
+  cout << "\nSolar system loaded, displaying bodies:" << endl
+       << s << "\nEnd of solar system display\n"
+       << endl;
 
-  int acc = 5000;
-  s.step_forward(acc);
-
+  const auto earth_position_begin = s.get_body("Earth").value().get().position;
+  cout << "Beginning simulation for one Earth year" << endl;
+  for (int i = 0; i < num_time_steps; i += 1) {
+    s.time_step(dt);
+  }
+  const auto earth_position_end = s.get_body("Earth").value().get().position;
+  if (vec_check_difference(earth_position_begin, earth_position_end)) {
+    cout << "Simulation successful" << endl;
+  } else {
+    cout << "Simulation failed, Earth may have moved too much" << endl;
+    return EXIT_FAILURE;
+  }
+  cout << "Displaying bodies after simulation, Earth is in roughtly the same "
+          "place\n"
+       << endl;
   cout << s;
-  cout << "====[ end ]====" << endl;
-  cout << "               " << endl;
-  return EXIT_SUCCESS;
 } catch (const std::system_error& e) {
   cerr << "An error occured, likely having to do with a file: " << e.what()
        << endl;
