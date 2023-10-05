@@ -46,13 +46,19 @@ struct Vec3d {
   double y;
   double z;
 
-  auto zero() -> void {
+  auto zero() {
     x = 0;
     y = 0;
     z = 0;
   }
 
-  auto length() const -> double { return std::sqrt(x * x + y * y + z * z); }
+  auto magnitude() const -> double { return std::sqrt(x * x + y * y + z * z); }
+  auto magnitude_squared() const -> double { return x * x + y * y + z * z; }
+
+  auto normalize() const -> Vec3d {
+    auto mag = magnitude();
+    return Vec3d{x / mag, y / mag, z / mag};
+  }
 
   auto abs() const -> Vec3d {
     return Vec3d{std::fabs(x), std::fabs(y), std::fabs(z)};
@@ -152,6 +158,23 @@ class Body {
               << "\n\tVelocity: " << b.velocity
               << "\n\tAcceleration: " << b.acceleration;
   }
+
+  static auto set_accelerations(vector<Body>& bodies) {
+    for (auto& b1 : bodies) {
+      b1.acceleration.zero();
+      for (auto& b2 : bodies) {
+        if (b2.name() == b1.name()) {
+          continue;
+        }
+        const auto delta_pos = b2.position - b1.position;
+        const auto rsquared = delta_pos.magnitude_squared();
+        const auto accel_mag = G * b2.mass() / rsquared;
+        const auto direction_to_other = delta_pos.normalize();
+        const auto accel_to_other = accel_mag * direction_to_other;
+        b1.acceleration += accel_to_other;
+      }
+    }
+  };
 };
 
 class SolarSystem {
@@ -174,6 +197,7 @@ class SolarSystem {
       const auto mass = read_from<double>(iss);
       bodies.emplace_back(name, orbit, mass, Vec3d{}, Vec3d{}, Vec3d{});
     }
+    const auto suns_mass = bodies[0].mass();
 
     std::mt19937 gen(std::random_device{}());
     std::uniform_real_distribution<> angle_dist(0, 2 * PI);
@@ -203,39 +227,28 @@ class SolarSystem {
       const auto aphelion = read_from<double>(iss);
       const auto radius = (perihelion + aphelion) / 2;
       const auto random_angle = angle_dist(gen);
-      const auto random_x = radius * cos(random_angle);
-      const auto random_y = radius * sin(random_angle);
 
-      const auto starting_position = Vec3d{random_x, random_y, 0};
+      const auto starting_position =
+          Vec3d{radius * cos(random_angle), radius * sin(random_angle), 0};
+
+      const auto velocity_mag = std::sqrt(G * suns_mass / radius);
+      const auto velocity =
+          Vec3d{velocity_mag * cos(random_angle + PI / 2.0),
+                velocity_mag * sin(random_angle + PI / 2.0), 0};
 
       cout << "Adding body to the simulation: " << name << endl;
       cout << "\tStarting position is: " << starting_position << endl;
+      cout << "\tStarting veclocity is: " << velocity << endl;
       cout << "\tRadius is: " << radius << endl;
-      bodies.emplace_back(name, orbit_name, mass, starting_position, Vec3d{},
+      bodies.emplace_back(name, orbit_name, mass, starting_position, velocity,
                           Vec3d{});
     }
   }
 
-  void time_step(double dt) {
-    for (auto& b1 : bodies) {
-      b1.acceleration.zero();
-      for (auto& b2 : bodies) {
-        if (b2.name() != b1.name()) {
-          // F = ma = G * M * m / r^2
-          // a = G * M * m / (m * r^2)
-          // a = G * M / r^2
-          const auto dist = (b1.position - b2.position).length();
-          const auto a1 = G * b2.mass() / (dist * dist * dist);
-          b1.acceleration += a1;
-          const auto a2 = G * b1.mass() / (dist * dist * dist);
-          b2.acceleration += a2;
-        }
-      }
-    }
+  auto time_step(double dt) {
+    Body::set_accelerations(bodies);
     for (auto& b : bodies) {
-      // d = v * dt + 0.5 * a * dt^2
       b.position += b.velocity * dt + 0.5 * b.acceleration * dt * dt;
-      // vf = vi + a * dt
       b.velocity += b.acceleration * dt;
     }
   }
@@ -259,17 +272,8 @@ class SolarSystem {
   }
 };
 
-auto vec_small_difference(const Vec3d& v1, const Vec3d& v2) -> bool {
-  return (v1.x - v2.x) < 1e-6 && (v1.y - v2.y) < 1e-6 && (v1.z - v2.z) < 1e-6;
-}
-
-enum class SuccessState {
-  Yes,
-  No,
-  Unknown,
-};
-
-auto run_simulation(SolarSystem& s) -> SuccessState {
+auto run_simulation(SolarSystem& s) {
+  // constexpr auto earth_year = 365.24 * 24 * 60 * 60;
   constexpr auto earth_year = 365.24 * 24 * 60 * 60;
   constexpr auto num_time_steps = 1000.0;
   constexpr auto dt = earth_year / num_time_steps;
@@ -283,20 +287,15 @@ auto run_simulation(SolarSystem& s) -> SuccessState {
   const auto earth = s.get_body("Earth");
 
   if (!earth.has_value()) {
-    run(s);
-    return SuccessState::Unknown;
+    cout << "Earth not present in the solar system" << endl;
+    return run(s);
   }
-
+  cout << "Earth present in the solar system, using as a reference" << endl;
   const auto& ref = earth.value().get();
 
-  const auto before = ref.position;
+  cout << "Earth position before: " << ref.position << endl;
   run(s);
-  const auto after = ref.position;
-
-  if (vec_small_difference(before, after)) {
-    return SuccessState::Yes;
-  }
-  return SuccessState::No;
+  cout << "Earth position after: " << ref.position << endl;
 }
 
 auto main() -> int try {
@@ -306,22 +305,7 @@ auto main() -> int try {
        << s << "\nEnd of solar system display\n\n"
        << "Beginning simulation for one Earth year" << endl;
 
-  const auto status = run_simulation(s);
-  switch (status) {
-    case SuccessState::Yes:
-      cout << "Simulation successful, Earth returned to roughly the same place"
-           << endl;
-      break;
-    case SuccessState::No:
-      cout
-          << "Simulation failed, Earth did not return to roughly the same place"
-          << endl;
-      break;
-    case SuccessState::Unknown:
-      cout << "Simulation state unknown, Earth not present for a reference"
-           << endl;
-      break;
-  }
+  run_simulation(s);
 
   cout << "\nFinal Simulation State:\n" << s << endl;
   return EXIT_SUCCESS;
