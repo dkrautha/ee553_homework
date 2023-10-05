@@ -1,15 +1,18 @@
-#include <cmath>
-#include <cstdlib>
-#include <exception>
-#include <fstream>
-#include <functional>
-#include <iostream>
-#include <limits>
-#include <optional>
-#include <random>
-#include <sstream>
-#include <utility>
-#include <vector>
+#include <cerrno>        // for errno
+#include <cmath>         // for fabs, sqrt, cos, sin
+#include <cstdlib>       // for EXIT_FAILURE
+#include <exception>     // for exception
+#include <fstream>       // for operator<<, basic_ostream, endl, ostream
+#include <functional>    // for reference_wrapper
+#include <iostream>      // for cout, cerr
+#include <limits>        // for numeric_limits
+#include <optional>      // for optional
+#include <random>        // for random_device, uniform_real_distribution
+#include <sstream>       // for istringstream
+#include <string>        // for char_traits, string, operator<<, allocator
+#include <system_error>  // for system_error, system_category
+#include <utility>       // for move
+#include <vector>        // for vector
 
 using std::cerr;
 using std::cout;
@@ -52,7 +55,7 @@ struct Vec3d {
   auto length() const -> double { return std::sqrt(x * x + y * y + z * z); }
 
   auto abs() const -> Vec3d {
-    return Vec3d{std::abs(x), std::abs(y), std::abs(z)};
+    return Vec3d{std::fabs(x), std::fabs(y), std::fabs(z)};
   }
 
   auto operator+=(const double rhs) -> Vec3d& {
@@ -256,36 +259,72 @@ class SolarSystem {
   }
 };
 
-constexpr double earth_year = 365 * 24 * 60 * 60;
-constexpr int num_time_steps = 1000;
-constexpr double dt = earth_year / num_time_steps;
-
-auto vec_check_difference(const Vec3d& v1, const Vec3d& v2) -> bool {
+auto vec_small_difference(const Vec3d& v1, const Vec3d& v2) -> bool {
   return (v1.x - v2.x) < 1e-6 && (v1.y - v2.y) < 1e-6 && (v1.z - v2.z) < 1e-6;
+}
+
+enum class SuccessState {
+  Yes,
+  No,
+  Unknown,
+};
+
+auto run_simulation(SolarSystem& s) -> SuccessState {
+  constexpr auto earth_year = 365.24 * 24 * 60 * 60;
+  constexpr auto num_time_steps = 1000.0;
+  constexpr auto dt = earth_year / num_time_steps;
+
+  const auto run = [](SolarSystem& s) {
+    for (int i = 0; i < num_time_steps; i += 1) {
+      s.time_step(dt);
+    }
+  };
+
+  const auto earth = s.get_body("Earth");
+
+  if (!earth.has_value()) {
+    run(s);
+    return SuccessState::Unknown;
+  }
+
+  const auto& ref = earth.value().get();
+
+  const auto before = ref.position;
+  run(s);
+  const auto after = ref.position;
+
+  if (vec_small_difference(before, after)) {
+    return SuccessState::Yes;
+  }
+  return SuccessState::No;
 }
 
 auto main() -> int try {
   auto s = SolarSystem("./solarsystem.dat");
-  cout << "\nSolar system loaded, displaying bodies:" << endl
-       << s << "\nEnd of solar system display\n"
-       << endl;
 
-  const auto earth_position_begin = s.get_body("Earth").value().get().position;
-  cout << "Beginning simulation for one Earth year" << endl;
-  for (int i = 0; i < num_time_steps; i += 1) {
-    s.time_step(dt);
+  cout << "\nSolar system loaded, displaying bodies:" << endl
+       << s << "\nEnd of solar system display\n\n"
+       << "Beginning simulation for one Earth year" << endl;
+
+  const auto status = run_simulation(s);
+  switch (status) {
+    case SuccessState::Yes:
+      cout << "Simulation successful, Earth returned to roughly the same place"
+           << endl;
+      break;
+    case SuccessState::No:
+      cout
+          << "Simulation failed, Earth did not return to roughly the same place"
+          << endl;
+      break;
+    case SuccessState::Unknown:
+      cout << "Simulation state unknown, Earth not present for a reference"
+           << endl;
+      break;
   }
-  const auto earth_position_end = s.get_body("Earth").value().get().position;
-  if (vec_check_difference(earth_position_begin, earth_position_end)) {
-    cout << "Simulation successful" << endl;
-  } else {
-    cout << "Simulation failed, Earth may have moved too much" << endl;
-    return EXIT_FAILURE;
-  }
-  cout << "Displaying bodies after simulation, Earth is in roughtly the same "
-          "place\n"
-       << endl;
-  cout << s;
+
+  cout << "\nFinal Simulation State:\n" << s << endl;
+  return EXIT_SUCCESS;
 } catch (const std::system_error& e) {
   cerr << "An error occured, likely having to do with a file: " << e.what()
        << endl;
