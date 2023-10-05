@@ -228,13 +228,22 @@ class SolarSystem {
       const auto radius = (perihelion + aphelion) / 2;
       const auto random_angle = angle_dist(gen);
 
+      // starting x = radius * cos(random_angle)
+      // starting y = radius * sin(random_angle)
       const auto starting_position =
           Vec3d{radius * cos(random_angle), radius * sin(random_angle), 0};
 
+      // velocity = sqrt(G * mass / radius)
+      // velocity x = radius * cos(random_angle + PI / 2.0)
+      // velocity y = radius * sin(random_angle + PI / 2.0)
       const auto velocity_mag = std::sqrt(G * suns_mass / radius);
       const auto velocity =
           Vec3d{velocity_mag * cos(random_angle + PI / 2.0),
                 velocity_mag * sin(random_angle + PI / 2.0), 0};
+
+      // The starting position and velocity are calculated with orbital
+      // mechanics equations, thanks stackoverflow
+      // https://stackoverflow.com/questions/14845273/initial-velocity-vector-for-circular-orbit
 
       cout << "Adding body to the simulation: " << name << endl;
       cout << "\tStarting position is: " << starting_position << endl;
@@ -273,13 +282,11 @@ class SolarSystem {
 };
 
 auto run_simulation(SolarSystem& s) {
-  // constexpr auto earth_year = 365.24 * 24 * 60 * 60;
-  constexpr auto earth_year = 365.24 * 24 * 60 * 60;
-  constexpr auto num_time_steps = 1000.0;
-  constexpr auto dt = earth_year / num_time_steps;
-
   const auto run = [](SolarSystem& s) {
-    for (int i = 0; i < num_time_steps; i += 1) {
+    constexpr auto earth_year = 365 * 24 * 60 * 60;
+    constexpr auto num_time_steps = 1000.0;
+    constexpr auto dt = earth_year / num_time_steps;
+    for (auto i = 0; i < num_time_steps; i += 1) {
       s.time_step(dt);
     }
   };
