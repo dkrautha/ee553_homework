@@ -51,8 +51,8 @@ class JulianDate {
 
   [[nodiscard]] auto diff_calc_juliandate(const JulianDate& other) const
       -> double {
-    auto this_jd = calc_juliandate();
-    auto other_jd = other.calc_juliandate();
+    const auto this_jd = calc_juliandate();
+    const auto other_jd = other.calc_juliandate();
     return this_jd - other_jd;
   };
 };
@@ -68,12 +68,12 @@ auto main() -> int {
   cout << "########" << endl;
 
   cout.precision(20);
-  JulianDate x(2007, 2, 8, 0, 0, 0);
-  double x1 = x.calc_juliandate();
+  const JulianDate x(2007, 2, 8, 0, 0, 0);
+  const double x1 = x.calc_juliandate();
   cout << "x1: " << x1 << endl;
 
-  JulianDate y(2000, 12, 31, 0, 0, 1);
-  double y1 = y.calc_juliandate();
+  const JulianDate y(2000, 12, 31, 0, 0, 1);
+  const double y1 = y.calc_juliandate();
   cout << "y1: " << y1 << endl;
 
   // manual calculation of the difference between two dates, e.g., x1 - y1 =
