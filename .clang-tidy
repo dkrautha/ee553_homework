@@ -1,11 +1,8 @@
 ---
 Checks:
   "*,
-  # -abseil-*,
   -altera-*,
-  # -android-*,
   -fuchsia-*,
-  # -google-*,
   -llvm*,
   -readability-identifier-length,
   -cppcoreguidelines-avoid-magic-numbers,
@@ -13,6 +10,9 @@ Checks:
   -misc-non-private-member-variables-in-classes,
   -cppcoreguidelines-non-private-member-variables-in-classes,
   -modernize-use-nodiscard,"
+  # -abseil-*,
+  # -google-*,
+  # -android-*,
   # -modernize-use-trailing-return-type,
   # -zircon-*,
   # -readability-else-after-return,
