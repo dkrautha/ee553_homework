@@ -1,11 +1,8 @@
 build:
   meson compile -C build/
 
-solar: build
-  ./build/solar_homework
-
 iwyu: build
   cd build && ninja iwyu
 
 setup:
-  CXX_LD=mold meson setup --reconfigure build/
+  CXX_LD=mold meson setup -Db_sanitize=address,undefined --reconfigure build/

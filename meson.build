@@ -25,6 +25,10 @@ executable('solar_homework',
            'solar_homework.cc',
            install : true)
 
+executable('hw7',
+           'hw7.cc',
+           install : true)
+
 run_target('iwyu',
            command : ['iwyu.sh', 'check'])
 
