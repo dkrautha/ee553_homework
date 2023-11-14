@@ -1,23 +1,37 @@
----
-Checks:
-  "*,
-  -altera-*,
-  -fuchsia-*,
-  -llvm*,
-  -readability-identifier-length,
-  -cppcoreguidelines-avoid-magic-numbers,
+Checks: >
+  -*,
+  bugprone-*,
+  cert-*,
+  clang-analyzer-*,
+  concurrency-*,
+  cppcoreguidelines-*,
+  hicpp-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  # -bugprone-easily-swappable-parameters,
+  # -bugprone-macro-parentheses,
+  # -bugprone-reserved-identifier,-cert-dcl37-c,-cert-dcl51-cpp,
+  # -cert-dcl21-cpp,
+  # -misc-no-recursion,
+  # -misc-non-private-member-variables-in-classes,
+  # -misc-use-anonymous-namespace,
+  # -performance-noexcept-move-constructor,
+  # -performance-no-int-to-ptr,
+  # -readability-braces-around-statements,
+  # -readability-identifier-length,
   -readability-magic-numbers,
-  -misc-non-private-member-variables-in-classes,
-  -cppcoreguidelines-non-private-member-variables-in-classes,
-  -modernize-use-nodiscard,"
-  # -abseil-*,
-  # -google-*,
-  # -android-*,
-  # -modernize-use-trailing-return-type,
-  # -zircon-*,
-  # -readability-else-after-return,
-  # -readability-static-accessed-through-instance,
-  # -readability-avoid-const-params-in-decls,
+  # -readability-named-parameter,
+  # -readability-uppercase-literal-suffix,
+  # -readability-use-anyofallof,
 WarningsAsErrors: ""
-HeaderFilterRegex: ""
-FormatStyle: none
+FormatStyle: file
+# CheckOptions:
+# - key: misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
+#   value: true
+# - key: readability-implicit-bool-conversion.AllowPointerConditions
+#   value: true
+# - key: readability-function-cognitive-complexity.Threshold
+#   value: 100 # FIXME: Lower this (30? 50?), and refactor complex functions
