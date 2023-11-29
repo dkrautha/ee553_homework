@@ -68,8 +68,10 @@ struct Vec3d {
 
   // iterator methods
   auto begin() -> data_type::iterator { return values.begin(); }
+  auto begin() const -> data_type::const_iterator { return values.begin(); }
   auto cbegin() const -> data_type::const_iterator { return values.cbegin(); }
   auto end() -> data_type::iterator { return values.end(); }
+  auto end() const -> data_type::const_iterator { return values.end(); }
   auto cend() const -> data_type::const_iterator { return values.cend(); }
 
   // access operator overloads
@@ -80,9 +82,9 @@ struct Vec3d {
 
   // arithmetic operator overloads
   auto operator+=(const double rhs) -> Vec3d& {
-    x_mut() += rhs;
-    y_mut() += rhs;
-    z_mut() += rhs;
+    for (auto& v : values) {
+      v += rhs;
+    }
     return *this;
   }
 
