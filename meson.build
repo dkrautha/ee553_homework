@@ -25,6 +25,10 @@ executable('solar_homework',
            'solar_homework.cc',
            install : true)
 
+executable('hw6', 
+           'hw_06.cc',
+           install : true)
+
 executable('hw7',
            'hw7.cc',
            install : true)
