@@ -1,3 +1,4 @@
+#include <algorithm>  // for copy_n
 #include <cstring>  // for strcat, strcpy, strlen, strncpy, size_t
 #include <iostream>  // for operator<<, basic_ostream, char_traits, cout, endl
 #include <utility>  // for swap, move
@@ -12,7 +13,7 @@ class String {
     String() : size_(0), data_(nullptr) {}
 
     String(usize length, char const* str) : size_(length), data_(new char[size_ + 1]) {
-        std::strncpy(data_, str, size_);
+        std::copy_n(str, length, data_);
     }
 
     // NOLINTNEXTLINE
@@ -52,8 +53,8 @@ class String {
         String result;
         result.size_ = a.size_ + b.size_;
         result.data_ = new char[result.size_ + 1];
-        std::strcpy(result.data_, a.data_);
-        std::strcat(result.data_, b.data_);
+        std::copy_n(a.data_, a.size_ - 1, result.data_);
+        std::copy_n(b.data_, b.size_, result.data_ + a.size_ - 1);
         return result;
     }
 };
