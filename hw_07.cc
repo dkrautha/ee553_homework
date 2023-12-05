@@ -5,7 +5,7 @@
 
 using namespace std;
 
-constexpr auto Pi = 3.14159265358979323846;
+constexpr auto PI = 3.14159265358979323846;
 
 // -------------- Design your Shape class here ---------------
 // -----------------------------------------------------------
@@ -22,6 +22,11 @@ class Shape {
     double y_;
 
   public:
+    Shape(Shape const&) = default;
+    Shape(Shape&&) = default;
+    auto operator=(Shape const&) -> Shape& = default;
+    auto operator=(Shape&&) -> Shape& = default;
+
     Shape(double x_loc, double y_loc) : x_(x_loc), y_(y_loc) {}
 
     [[nodiscard]] auto x() const -> double {
@@ -61,7 +66,7 @@ class Circle: public Shape {
     Circle(double x, double y, double radius) : Shape(x, y), radius(radius) {}
 
     [[nodiscard]] auto area() const -> double override {
-        return Pi * radius * radius;
+        return PI * radius * radius;
     }
 
     void draw(ostream& out_stream) const override {
@@ -175,7 +180,7 @@ class Drawing {
 
     void showArea() {
         for (auto const& shape : shapes) {
-            cout << shape->area() << endl;
+            cout << shape->area() << '\n';
         }
     }
 
@@ -185,9 +190,9 @@ class Drawing {
 };
 
 auto main() -> int {
-    cout << "########" << endl;
-    cout << "Main Problem" << endl;
-    cout << "########" << endl;
+    cout << "########" << '\n';
+    cout << "Main Problem" << '\n';
+    cout << "########" << '\n';
 
     // set path to create .ps file to write postscript instructions
     Drawing drawing("./test.ps");
@@ -207,8 +212,8 @@ auto main() -> int {
     // print out all shapes area
     drawing.showArea();
 
-    cout << "====[ end ]====" << endl;
-    cout << "               " << endl;
+    cout << "====[ end ]====\n";
+    cout << "               \n";
 
     return 0;
 }
