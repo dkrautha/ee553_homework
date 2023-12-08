@@ -21,8 +21,9 @@ class String {
 
     String(String const& other) : String(other.size_, other.data_) {}
 
-    auto operator=(String other) -> String& {
-        swap(*this, other);
+    auto operator=(String const& other) -> String& {
+        String tmp(other);
+        swap(*this, tmp);
         return *this;
     }
 
