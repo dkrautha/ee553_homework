@@ -1,0 +1,30 @@
+change_in_place: true
+excludes:
+  - \.gitignore
+  - .*lock
+  - \.git/.*
+  - \.licensure\.yml
+  - README.*
+  - LICENSE.*
+  - .*\.(md|rst|txt)
+licenses:
+  - files: any
+    ident: Unlicense
+    authors:
+      - name: David Krauthamer
+        email: dkrautha@pm.me
+    auto_template: true
+comments:
+  - extensions:
+      - cc
+    columns: 80
+    commenter:
+      type: line
+      comment_char: "//"
+      trailing_lines: 0
+  - extension: any
+    columns: 80
+    commenter:
+      type: line
+      comment_char: "#"
+      trailing_lines: 0
