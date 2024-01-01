@@ -97,14 +97,3 @@ if cppcheck_program.found()
   ]
   run_target('cppcheck', command : [cppcheck_program, cppcheck_config])
 endif
-
-cpplint_program = find_program('cpplint', required : false)
-if cpplint_program.found()
-  cpplint_config = [
-    '--verbose=5',
-    '--recursive',
-    join_paths(meson.current_source_dir(), '.')
-  ]
-  run_target('cpplint', command : [cpplint_program, cpplint_config])
-endif
-

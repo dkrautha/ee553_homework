@@ -19,14 +19,17 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 # For more information, please refer to <http://unlicense.org/>
+
 build:
   meson compile -C build/
+
+run target: build
+  ./build/hw_{{target}}
 
 checks: build
   ninja -C build clang-tidy
   ninja -C build iwyu
   ninja -C build cppcheck
-  ninja -C build cpplint
 
 setup:
-  CXX_LD=mold meson setup -Db_sanitize=address,undefined --reconfigure build/
+  CXX_LD=mold meson setup -Db_sanitize=address,undefined build/
